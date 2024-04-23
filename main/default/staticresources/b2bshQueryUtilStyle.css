@@ -1,0 +1,19 @@
+/* b2bshQueryUtilStyle */
+
+.icon-destructive > button{
+    order: var(--lwc-borderWidthThin,1px) solid var(--lwc-colorBorderPrimary,rgb(221, 219, 218));
+    transition: border .15s linear;
+    background-color: var(--lwc-colorBackgroundDestructive,rgb(194, 57, 52));
+    border-color: var(--lwc-colorBackgroundDestructive,rgb(194, 57, 52));
+    color: var(--lwc-colorTextInverse,rgb(255, 255, 255));
+}
+.slds-modal__container {
+    max-width: 80rem !important;
+    width: 80% !important;
+}
+
+
+
+
+
+}

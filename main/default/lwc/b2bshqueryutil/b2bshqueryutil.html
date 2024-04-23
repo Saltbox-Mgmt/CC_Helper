@@ -1,0 +1,182 @@
+<!--
+ - Created by dimitrisavelieff on 2020-04-09.
+ -->
+
+<!-- B2Bshqueryutil -->
+<template>
+    <lightning-card title={componentTitle} class="slds-p-around--medium">
+        <lightning-button label="Reset" slot="actions"></lightning-button>
+        <p class="slds-p-horizontal_small">
+            <lightning-layout multiple-rows="true">
+                <lightning-layout-item size="12">
+                    <lightning-layout multiple-rows="true">
+                        <lightning-layout-item size="12">
+                            <lightning-layout multiple-rows="true">
+                                <template for:each={queryFilters} for:item="queryFilter" for:index="ind">
+                                    <lightning-layout-item size="12" key={queryFilter.rowId}>
+                                        <lightning-layout multiple-rows="false">
+                                            <lightning-layout-item size="3" padding="horizontal-small">
+                                                <lightning-layout multiple-rows="false" vertical-align="end">
+                                                    <lightning-layout-item size="1">
+                                                        <lightning-badge label={ind}></lightning-badge>
+                                                    </lightning-layout-item>
+                                                    <lightning-layout-item size="11">
+                                                        <lightning-combobox
+                                                                name="fieldName"
+                                                                value={queryFilter.fieldName}
+                                                                placeholder="Select Field"
+                                                                data-item={ind}
+                                                                onchange={setQueryRowField}
+                                                                options={fieldOptions}></lightning-combobox>
+                                                    </lightning-layout-item>
+                                                </lightning-layout>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="2" padding="horizontal-small">
+                                                <template if:true={queryFilter.stringQuery}>
+                                                    <lightning-combobox
+                                                            name="operator"
+                                                            value={queryFilter.operator}
+                                                            placeholder="Operator"
+                                                            data-item={ind}
+                                                            onchange={setQueryRowOperator}
+                                                            options={operatorOptionsString}></lightning-combobox>
+                                                </template>
+                                                <template if:false={queryFilter.stringQuery}>
+                                                    <lightning-combobox
+                                                            name="operator"
+                                                            value={queryFilter.operator}
+                                                            placeholder="Operator"
+                                                            data-item={ind}
+                                                            onchange={setQueryRowOperator}
+                                                            options={operatorOptionsInt}></lightning-combobox>
+                                                </template>
+
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="4" padding="horizontal-small">
+                                                <lightning-layout multiple-rows="false" vertical-align="end">
+                                                    <lightning-layout-item size="9">
+                                                        <lightning-input type="text" data-item={ind} value={queryFilter.filter}
+                                                                         onblur={setQueryRowValue}
+                                                                         placeholder="Value"></lightning-input>
+                                                    </lightning-layout-item>
+                                                    <template if:true={queryFilter.canAdd}>
+                                                        <lightning-layout-item size="1" padding="horizontal-small">
+                                                            <lightning-button-icon icon-name="utility:add"
+                                                                                   alternative-text="Add Row"
+                                                                                   variant="border-filled"
+                                                                                   title="Add Row"
+                                                                                   onclick={addQueryFilterRow}></lightning-button-icon>
+                                                        </lightning-layout-item>
+                                                    </template>
+                                                    <template if:true={queryFilter.canRemove}>
+                                                        <lightning-layout-item size="1" padding="horizontal-small">
+                                                            <lightning-button-icon icon-name="utility:delete"
+                                                                                   alternative-text="Remove Row"
+                                                                                   variant="brand"
+                                                                                   title="Remove Row" data-item={ind}
+                                                                                   onclick={requestRemoveFilterRow}></lightning-button-icon>
+                                                        </lightning-layout-item>
+                                                    </template>
+                                                    <template if:true={queryFilter.validateRemove}>
+                                                        <lightning-layout-item size="1" padding="horizontal-small">
+                                                            <lightning-button-icon icon-name="utility:clear"
+                                                                                   alternative-text="Cancel Remove Row"
+                                                                                   variant="brand"
+                                                                                   title="Cancel Remove Row"
+                                                                                   data-item={ind}
+                                                                                   onclick={cancelRemoveFilterRow}></lightning-button-icon>
+                                                        </lightning-layout-item>
+                                                        <lightning-layout-item size="1" padding="horizontal-small">
+                                                            <lightning-button-icon icon-name="utility:delete"
+                                                                                   alternative-text="Remove Row"
+                                                                                   class="icon-destructive"
+                                                                                   variant="container"
+                                                                                   title="Remove Row" data-item={ind}
+                                                                                   onclick={removeQueryFilterRow}></lightning-button-icon>
+                                                        </lightning-layout-item>
+                                                    </template>
+                                                </lightning-layout>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="3" padding="around-small">
+
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </lightning-layout-item>
+                                </template>
+                            </lightning-layout>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="6" padding="around-small">
+                            <lightning-layout multiple-rows="false" vertical-align="end">
+                                <lightning-layout-item size="1">
+                                    <lightning-button label="Search" variant="brand" onclick={executeFilter}></lightning-button>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="5">
+                                    <lightning-combobox
+                                            name="filterMode"
+                                            label="Filter Mode"
+                                            value={filterMode.operator}
+                                            placeholder="Select Filter Option"
+                                            options={queryModeOperators}></lightning-combobox>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-layout-item>
+
+                    </lightning-layout>
+
+                </lightning-layout-item>
+                <lightning-layout-item size="12">
+
+                </lightning-layout-item>
+            </lightning-layout>
+        </p>
+        <p slot="footer">
+            <template if:true={querying}>
+                <div class="spinner">
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </div>
+            </template>
+            <template if:true={hasResults}>
+                <lightning-button label={resultsButtonLabel} variant="brand" onclick={openResultModal}>
+                </lightning-button>
+                <lightning-button class="slds-m-left--small" label="Download Results" variant="brand" onclick={downloadResults}></lightning-button>
+            </template>
+            <template if:true={noResults}>
+                There were no records found
+            </template>
+        </p>
+    </lightning-card>
+    <template if:true={openResults}>
+        <div class="modalWindow" style="height: 640px;">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeResultsModal}>
+                            <lightning-icon icon-name="utility:close" size="medium">
+                            </lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Results</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <c-datatablelwc records={recordResults}
+                                        fieldstodisplay={fieldstodisplay}
+                                        sobject={sobject}
+                                        defrecperpage=10
+                                        enablepagination=true
+                                        hidecheckboxbuttons=true></c-datatablelwc>
+<!--                        <lightning-datatable-->
+<!--                                key-field="id"-->
+<!--                                data={recordResults}-->
+<!--                                columns={resultColumns}-->
+<!--                                hide-checkbox-column>-->
+<!--                        </lightning-datatable>-->
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Close" variant="neutral" onclick={closeResultsModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+</template>

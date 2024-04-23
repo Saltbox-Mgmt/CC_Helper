@@ -1,0 +1,90 @@
+<!--
+ - Created by dimitrisavelieff on 2020-04-28.
+ -->
+
+<!-- B 2 Butilold -->
+<template >
+    <div class="app">
+        <lightning-tabset>
+            <lightning-tab label="Extract">
+                <div>
+                    <div>
+                        <div>
+                            <lightning-tabset>
+                                <template for:each={allConfigs.data} for:item='config'>
+
+                                    <lightning-tab key={config.dataGroup} label={config.dataGroup} onactive={handleDataGroupTabSelect}>
+                                        <lightning-datatable
+                                                key-field="dataGroup"
+                                                data={config.filteredObjs}
+                                                columns={filteredColumnNames}
+                                                onrowselection={handleRecordFilterSelect}>
+                                        </lightning-datatable>
+                                        <lightning-dual-listbox name="SObjects"
+                                                                label="Select SObjects"
+                                                                source-label="Available"
+                                                                selected-label="Selected"
+                                                                field-level-help="This is a dual listbox"
+                                                                options={config.data}
+                                                                onchange={handleSobjectSelect}></lightning-dual-listbox>
+
+                                        <!--<lightning-checkbox-group name="Checkbox Group"
+                                                                  label="Checkbox Group"
+                                                                  options={config.data}
+                                                                  value={sobjectValues}
+                                                                  onchange={handleSobjectSelect}>
+
+                                                    </lightning-checkbox-group>-->
+                                    </lightning-tab>
+                                </template>
+                            </lightning-tabset>
+                            <!-- <lightning-datatable
+                                     key-field="dataGroup"
+                                     data={gridData}
+                                     columns={columns}
+                                     onrowselection={getSelectedRow}>
+                             </lightning-datatable>-->
+                        </div>
+                        <!--<div class="slds-col slds-size&#45;&#45;1-of-2">
+                            <lightning-datatable
+                                    key-field="dataGroup"
+                                    data={filteredObjs}
+                                    columns={filteredColumnNames}
+                                    onrowselection={getSelectedRow}>
+                            </lightning-datatable>
+                        </div>-->
+                    </div>
+                    <div class="slds-m-top_medium">
+                        <div>
+                            <lightning-button
+                                    label="Extract"
+                                    onclick={initExtract}
+                                    disabled={extracting}>
+                            </lightning-button>
+                        </div>
+                        <div class="slds-m-top--x-small">
+                            <lightning-progress-bar if:true={extracting} value={progress}></lightning-progress-bar>
+                        </div>
+                    </div>
+                </div>
+            </lightning-tab>
+            <lightning-tab label="Import">
+                <lightning-input type="file"
+                                 label="Load B2B Config File"
+                                 accept="txt json"
+                                 onchange={handleFilesChange}
+                                 value={file}
+                                 multiple>
+                </lightning-input>
+                <lightning-input type="checkbox"
+                                 label="Do Not Chain Jobs"
+                                 onchange={handleDoNotChainJobsCheckbox}>
+                </lightning-input>
+            </lightning-tab>
+            <!--            <lightning-tab label="Admin">-->
+
+            <!--            </lightning-tab>-->
+        </lightning-tabset>
+    </div>
+
+</template>

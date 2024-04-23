@@ -1,0 +1,557 @@
+<!--
+ - Created by dimitrisavelieff on 2019-07-08.
+ -->
+
+<!-- B2B Sandbox Helper Util -->
+<template>
+    <div class="app">
+        <div class="flow-window slds-box">
+            <template if:true={navigation.home}>
+                <lightning-layout multiple-rows="true">
+                    <!--                        <lightning-layout-item size="12" padding="around-large">-->
+                    <!--                            <div class="slds-text-heading_medium slds-m-bottom_large">-->
+                    <!--                                Sandbox Helper-->
+                    <!--                            </div>-->
+                    <!--                        </lightning-layout-item>-->
+                    <lightning-layout-item size="12" padding="around-small">
+                        <div class="slds-text-heading_medium slds-align_absolute-center">
+                            <h1>To begin, select Import or Export Data</h1>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-medium">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button variant="brand" label="Import" onclick={handleNav} title="Import Data"
+                                              class="slds-m-left_small" name="import"></lightning-button>
+                            <lightning-button variant="brand" label="Export" onclick={handleNav} title="Export Data"
+                                              class="slds-m-left_small" name="exportStorefront"></lightning-button>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+            <template if:true={navigation.import}>
+                <div class="slds-align_absolute-center">
+                    <lightning-input type="file"
+                                     label="Load B2B Config File"
+                                     accept="txt json"
+                                     onchange={handleFilesChange}
+                                     value={file}
+                                     multiple>
+                    </lightning-input>
+                    <lightning-input type="checkbox"
+                                     label="Do Not Chain Jobs"
+                                     onchange={handleDoNotChainJobsCheckbox}>
+                    </lightning-input>
+                    <lightning-button variant="brand" label="Back" onclick={handleNav} title="Back"
+                                      class="slds-m-left_small" name="home"></lightning-button>
+                </div>
+            </template>
+            <template if:true={navigation.exportStorefront}>
+                <lightning-layout multiple-rows="true">
+                    <!--                    <lightning-layout-item size="12">-->
+                    <!--                        <div class="slds-text-heading_medium slds-m-bottom_large">-->
+                    <!--                            Storefront Settings-->
+                    <!--                        </div>-->
+                    <!--                    </lightning-layout-item>-->
+                    <lightning-layout-item size="12" padding="around-large">
+                        <lightning-progress-indicator current-step="exportStorefront" type="path" has-error="true"
+                                                      variant="base">
+                            <lightning-progress-step label="Storefront Settings" value="exportStorefront"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Configuration Settings" value="exportConfigs"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Account Data" value="exportAccount"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Product Data" value="exportProduct"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Export" value="exportFile"
+                                                     onclick={handleNav}></lightning-progress-step>
+                        </lightning-progress-indicator>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-layout>
+                            <lightning-layout-item size="3" padding="around-small">
+                                <div class="slds-text-heading_small">
+                                    Would you like to export Storefront Settings?
+                                </div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small" title="Storefront">
+                                <!--                                <lightning-button-stateful-->
+                                <!--                                        title='Storefront'-->
+                                <!--                                        label-when-off="Yes"-->
+                                <!--                                        label-when-on="Yes"-->
+                                <!--                                        label-when-hover="Unselect"-->
+                                <!--                                        variant="brand"-->
+                                <!--                                        selected={settingsToExport.Storefront.selected}-->
+                                <!--                                        class="configSelection"-->
+                                <!--                                        onclick={queueCategory}>-->
+                                <!--                                </lightning-button-stateful>-->
+                                <lightning-button variant="Brand" label="Yes" onclick={queueCategory} title="Storefront"
+                                                  class="slds-m-left_small" name="exportConfigs"></lightning-button>
+
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small" title="Storefront">
+                                <lightning-button variant="neutral" label="No" onclick={removeCategory}
+                                                  title="Storefront"
+                                                  class="slds-m-left_small" name="exportConfigs"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                    <template if:true={settingsToExport.Storefront.selected}>
+                        <lightning-layout-item size="12">
+                            <lightning-layout multiple-rows="true">
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                                <lightning-layout-item size="8">
+                                    <lightning-layout multiple-rows="true" title="Storefront">
+                                        <template for:each={allConfigs.data.Storefront} for:item='config'
+                                                  title="Storefront">
+                                            <lightning-layout-item size="3" padding="around-small" key={config.label}>
+                                                <lightning-button-stateful
+                                                        key={config.label}
+                                                        title={config.index}
+                                                        label-when-off={config.label}
+                                                        label-when-on={config.label}
+                                                        label-when-hover={config.label}
+                                                        icon-name-when-off="utility:add"
+                                                        icon-name-when-on="utility:check"
+                                                        icon-name-when-hover="utility:close"
+                                                        selected={config.isSelected}
+                                                        onclick={handleSobjectSelect}
+                                                        onmouseover={testHover}
+                                                        class="sObjectButton">
+
+                                                </lightning-button-stateful>
+                                            </lightning-layout-item>
+                                        </template>
+                                        <lightning-layout-item size="3" padding="around-small">
+                                            <lightning-button-stateful
+                                                    label-when-off="Select All"
+                                                    label-when-on="Select All"
+                                                    label-when-hover="Deselect All"
+                                                    icon-name-when-off="utility:add"
+                                                    icon-name-when-on="utility:check"
+                                                    icon-name-when-hover="utility:close"
+                                                    variant="brand"
+                                                    onclick={selectAllSobjects}
+                                                    selected={settingsToExport.Storefront.allSelected}
+                                            >
+                                            </lightning-button-stateful>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-layout-item>
+                    </template>
+                    <lightning-layout-item size="12">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button variant="neutral" label="Back" onclick={handleNav} title="Back"
+                                              class="slds-m-left_small" name="home"></lightning-button>
+                            <template if:true={settingsToExport.Storefront.selected}>
+                                <lightning-button variant="brand" label="Next" onclick={handleNav} title="Next"
+                                                  class="slds-m-left_small" name="exportConfigs"></lightning-button>
+                            </template>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+            <template if:true={navigation.exportConfigs}>
+                <lightning-layout multiple-rows="true">
+                    <!--                    <lightning-layout-item size="12">-->
+                    <!--                        <div class="slds-text-heading_medium slds-m-bottom_large">-->
+                    <!--                            Configuration Settings-->
+                    <!--                        </div>-->
+                    <!--                    </lightning-layout-item>-->
+                    <lightning-layout-item size="12" padding="around-large">
+                        <lightning-progress-indicator current-step="exportConfigs" type="path" has-error="true"
+                                                      variant="base">
+                            <lightning-progress-step label="Storefront Settings" value="exportStorefront"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Configuration Settings" value="exportConfigs"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Account Data" value="exportAccount"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Product Data" value="exportProduct"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Export" value="exportFile"
+                                                     onclick={handleNav}></lightning-progress-step>
+                        </lightning-progress-indicator>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-layout>
+                            <lightning-layout-item size="3" padding="around-small">
+                                <div class="slds-text-heading_small">
+                                    Would you like to export Configuration Settings?
+                                </div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small">
+                                <!--                                <lightning-button-stateful-->
+                                <!--                                        title='Configuration'-->
+                                <!--                                        label-when-off="Yes"-->
+                                <!--                                        label-when-on="Yes"-->
+                                <!--                                        label-when-hover="Unselect"-->
+                                <!--                                        variant="brand"-->
+                                <!--                                        selected={settingsToExport.Configuration.selected}-->
+                                <!--                                        class="configSelection"-->
+                                <!--                                        onclick={queueCategory}>-->
+                                <!--                                </lightning-button-stateful>-->
+                                <lightning-button variant="Brand" label="Yes" onclick={queueCategory}
+                                                  title="Configuration"
+                                                  class="slds-m-left_small" name="exportAccount"></lightning-button>
+
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small" title="Configuration">
+                                <lightning-button variant="neutral" label="No" onclick={removeCategory}
+                                                  title="Configuration"
+                                                  class="slds-m-left_small" name="exportAccount"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                    <template if:true={settingsToExport.Configuration.selected}>
+                        <lightning-layout-item size="12">
+                            <lightning-layout multiple-rows="true">
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                                <lightning-layout-item size="8">
+                                    <lightning-layout multiple-rows="true" title="Configuration">
+                                        <template for:each={allConfigs.data.Configuration} for:item='config'
+                                                  title="Storefront">
+                                            <lightning-layout-item size="3" padding="around-small" key={config.label}>
+                                                <lightning-button-stateful
+                                                        key={config.label}
+                                                        title={config.index}
+                                                        label-when-off={config.label}
+                                                        label-when-on={config.label}
+                                                        label-when-hover="Unselect"
+                                                        icon-name-when-off="utility:add"
+                                                        icon-name-when-on="utility:check"
+                                                        icon-name-when-hover="utility:close"
+                                                        selected={config.isSelected}
+                                                        onclick={handleSobjectSelect}
+                                                        class="sObjectButton">
+
+                                                </lightning-button-stateful>
+                                            </lightning-layout-item>
+                                        </template>
+                                        <lightning-layout-item size="3" padding="around-small">
+                                            <lightning-button-stateful
+                                                    label-when-off="Select All"
+                                                    label-when-on="Select All"
+                                                    label-when-hover="Deselect All"
+                                                    icon-name-when-off="utility:add"
+                                                    icon-name-when-on="utility:check"
+                                                    icon-name-when-hover="utility:close"
+                                                    variant="brand"
+                                                    onclick={selectAllSobjects}
+                                                    selected={settingsToExport.Configuration.allSelected}
+                                            >
+                                            </lightning-button-stateful>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-layout-item>
+                    </template>
+                    <lightning-layout-item size="12">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button variant="neutral" label="Back" onclick={handleNav} title="Back"
+                                              class="slds-m-left_small" name="exportStorefront"></lightning-button>
+                            <template if:true={settingsToExport.Configuration.selected}>
+                                <lightning-button variant="brand" label="Next" onclick={handleNav} title="Next"
+                                                  class="slds-m-left_small" name="exportAccount"></lightning-button>
+                            </template>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+            <template if:true={navigation.exportAccount}>
+                <lightning-layout multiple-rows="true">
+                    <!--                    <lightning-layout-item size="12">-->
+                    <!--                        <div class="slds-text-heading_medium slds-m-bottom_large">-->
+                    <!--                            Account Data-->
+                    <!--                        </div>-->
+                    <!--                    </lightning-layout-item>-->
+                    <lightning-layout-item size="12" padding="around-large">
+                        <lightning-progress-indicator current-step="exportAccount" type="path" has-error="true"
+                                                      variant="base">
+                            <lightning-progress-step label="Storefront Settings" value="exportStorefront"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Configuration Settings" value="exportConfigs"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Account Data" value="exportAccount"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Product Data" value="exportProduct"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Export" value="exportFile"
+                                                     onclick={handleNav}></lightning-progress-step>
+                        </lightning-progress-indicator>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-layout>
+                            <lightning-layout-item size="3" padding="around-small">
+                                <div class="slds-text-heading_small">
+                                    Would you like to export Account Data?
+                                </div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small">
+                                <!--                                <lightning-button-stateful-->
+                                <!--                                        title='Account'-->
+                                <!--                                        label-when-off="Yes"-->
+                                <!--                                        label-when-on="Yes"-->
+                                <!--                                        label-when-hover="Unselect"-->
+                                <!--                                        variant="brand"-->
+                                <!--                                        selected={settingsToExport.Account.selected}-->
+                                <!--                                        class="configSelection"-->
+                                <!--                                        onclick={queueCategory}>-->
+                                <lightning-button variant="Brand" label="Yes" onclick={queueCategory} title="Account"
+                                                  class="slds-m-left_small" name="exportProduct"></lightning-button>
+
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small" title="Account">
+                                <lightning-button variant="neutral" label="No" onclick={removeCategory} title="Account"
+                                                  class="slds-m-left_small" name="exportProduct"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                    <template if:true={settingsToExport.Account.selected}>
+                        <lightning-layout-item size="12">
+                            <lightning-layout multiple-rows="true">
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                                <lightning-layout-item size="8">
+                                    <lightning-layout multiple-rows="true" title="Account">
+                                        <template for:each={allConfigs.data.Account} for:item='config'
+                                                  title="Storefront">
+                                            <lightning-layout-item size="3" padding="around-small" key={config.label}>
+                                                <lightning-button-stateful
+                                                        key={config.label}
+                                                        title={config.index}
+                                                        label-when-off={config.label}
+                                                        label-when-on={config.label}
+                                                        label-when-hover="Unselect"
+                                                        icon-name-when-off="utility:add"
+                                                        icon-name-when-on="utility:check"
+                                                        icon-name-when-hover="utility:close"
+                                                        selected={config.isSelected}
+                                                        onclick={handleSobjectSelect}
+                                                        class="sObjectButton">
+
+                                                </lightning-button-stateful>
+                                            </lightning-layout-item>
+                                        </template>
+                                        <lightning-layout-item size="3" padding="around-small">
+                                            <lightning-button-stateful
+                                                    label-when-off="Select All"
+                                                    label-when-on="Select All"
+                                                    label-when-hover="Deselect All"
+                                                    icon-name-when-off="utility:add"
+                                                    icon-name-when-on="utility:check"
+                                                    icon-name-when-hover="utility:close"
+                                                    variant="brand"
+                                                    onclick={selectAllSobjects}
+                                                    selected={settingsToExport.Account.allSelected}
+                                            >
+                                            </lightning-button-stateful>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12">
+                            <c-b2bshqueryutil sobject="Account" fieldstodisplay="Name,Phone,ccrz__E_AccountGroup__c"
+                                              onfiltereddata={setAccountRecordObjects}></c-b2bshqueryutil>
+                        </lightning-layout-item>
+                    </template>
+                    <lightning-layout-item size="12">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button variant="neutral" label="Back" onclick={handleNav} title="Back"
+                                              class="slds-m-left_small" name="exportConfigs"></lightning-button>
+                            <template if:true={settingsToExport.Account.selected}>
+                                <lightning-button variant="brand" label="Next" onclick={handleNav} title="Next"
+                                                  class="slds-m-left_small" name="exportProduct"></lightning-button>
+                            </template>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+            <template if:true={navigation.exportProduct}>
+                <lightning-layout multiple-rows="true">
+                    <!--                    <lightning-layout-item size="12">-->
+                    <!--                        <div class="slds-text-heading_medium slds-m-bottom_large">-->
+                    <!--                            Product Data-->
+                    <!--                        </div>-->
+                    <!--                    </lightning-layout-item>-->
+                    <lightning-layout-item size="12" padding="around-large">
+                        <lightning-progress-indicator current-step="exportProduct" type="path" has-error="true"
+                                                      variant="base">
+                            <lightning-progress-step label="Storefront Settings" value="exportStorefront"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Configuration Settings" value="exportConfigs"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Account Data" value="exportAccount"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Product Data" value="exportProduct"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Export" value="exportFile"
+                                                     onclick={handleNav}></lightning-progress-step>
+                        </lightning-progress-indicator>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12">
+                        <lightning-layout>
+                            <lightning-layout-item size="3" padding="around-small">
+                                <div class="slds-text-heading_small">
+                                    Would you like to export Product Data?
+                                </div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small">
+                                <!--                                <lightning-button-stateful-->
+                                <!--                                        title='Product'-->
+                                <!--                                        label-when-off="Yes"-->
+                                <!--                                        label-when-on="Yes"-->
+                                <!--                                        label-when-hover="Unselect"-->
+                                <!--                                        variant="brand"-->
+                                <!--                                        selected={settingsToExport.Product.selected}-->
+                                <!--                                        class="configSelection"-->
+                                <!--                                        onclick={queueCategory}>-->
+                                <!--                                </lightning-button-stateful>-->
+                                <lightning-button variant="Brand" label="Yes" onclick={queueCategory} title="Product"
+                                                  class="slds-m-left_small" name="exportFile"></lightning-button>
+
+                            </lightning-layout-item>
+                            <lightning-layout-item size="1" padding="around-small" title="Product">
+                                <lightning-button variant="neutral" label="No" onclick={removeCategory} title="Product"
+                                                  class="slds-m-left_small" name="exportFile"></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </lightning-layout-item>
+                    <template if:true={settingsToExport.Product.selected}>
+                        <lightning-layout-item size="12">
+                            <lightning-layout multiple-rows="true">
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                                <lightning-layout-item size="8">
+                                    <lightning-layout multiple-rows="true" title="Product">
+                                        <template for:each={allConfigs.data.Product} for:item='config'
+                                                  title="Storefront">
+                                            <lightning-layout-item size="3" padding="around-small" key={config.label}>
+                                                <lightning-button-stateful
+                                                        key={config.label}
+                                                        title={config.index}
+                                                        label-when-off={config.label}
+                                                        label-when-on={config.label}
+                                                        label-when-hover="Unselect"
+                                                        icon-name-when-off="utility:add"
+                                                        icon-name-when-on="utility:check"
+                                                        icon-name-when-hover="utility:close"
+                                                        selected={config.isSelected}
+                                                        onclick={handleSobjectSelect}
+                                                        class="sObjectButton">
+
+                                                </lightning-button-stateful>
+                                            </lightning-layout-item>
+                                        </template>
+                                        <lightning-layout-item size="3" padding="around-small">
+                                            <lightning-button-stateful
+                                                    label-when-off="Select All"
+                                                    label-when-on="Select All"
+                                                    label-when-hover="Deselect All"
+                                                    icon-name-when-off="utility:add"
+                                                    icon-name-when-on="utility:check"
+                                                    icon-name-when-hover="utility:close"
+                                                    variant="brand"
+                                                    onclick={selectAllSobjects}
+                                                    selected={settingsToExport.Product.allSelected}
+                                            >
+                                            </lightning-button-stateful>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="2"></lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12">
+                            <c-b2bshqueryutil sobject="ccrz__E_Product__c"
+                                              fieldstodisplay="Name,ccrz__ProductId__c,ccrz__ProductStatus__c"
+                                              onfiltereddata={setProductRecordObjects}></c-b2bshqueryutil>
+                        </lightning-layout-item>
+                    </template>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button variant="neutral" label="Back" onclick={handleNav} title="Back"
+                                              class="slds-m-left_small" name="exportAccount"></lightning-button>
+                            <template if:true={settingsToExport.Product.selected}>
+                                <lightning-button variant="brand" label="Next" onclick={handleNav} title="Next"
+                                                  class="slds-m-left_small" name=exportFile></lightning-button>
+                            </template>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+            </template>
+            <template if:true={navigation.exportFile}>
+                <lightning-layout multiple-rows="true">
+                    <lightning-layout-item size="12" padding="around-large">
+                        <!--                        <div class="slds-align_absolute-center">-->
+                        <lightning-progress-indicator current-step="exportFile" type="path" has-error="true"
+                                                      variant="base">
+                            <lightning-progress-step label="Storefront Settings" value="exportStorefront"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Configuration Settings" value="exportConfigs"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Account Data" value="exportAccount"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Product Data" value="exportProduct"
+                                                     onclick={handleNav}></lightning-progress-step>
+                            <lightning-progress-step label="Export" value="exportFile"
+                                                     onclick={handleNav}></lightning-progress-step>
+                        </lightning-progress-indicator>
+                        <!--                        </div>-->
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <template if:false={hasItemsToExport}>
+                            <div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error"
+                                 role="alert">
+                                <span class="slds-assistive-text">error</span>
+                                <lightning-icon icon-name="utility:error" variant="inverse"
+                                                size="xx-small"></lightning-icon>
+                                <div class="slds-p-left_xx-small">
+                                    <h2>You have not selected any items to export</h2>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={hasItemsToExport}>
+                            <lightning-tree-grid
+                                    data={summaryData}
+                                    columns={summaryColumns}
+                                    key-field="attribute"
+                                    expanded-rows={currentExpandedSummary}
+                                    hide-checkbox-column="true">
+                            </lightning-tree-grid>
+                        </template>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <div class="slds-align_absolute-center">
+                            <lightning-button
+                                    label="Extract"
+                                    onclick={initExtract}
+                                    disabled={extractButtonDisabled}
+                                    variant="brand">
+                            </lightning-button>
+                            <lightning-button variant="neutral" label="Back" onclick={handleNav} title="Back"
+                                              class="slds-m-left_small" name="exportProduct"></lightning-button>
+                            <lightning-button variant="brand" label="Home" onclick={handleNav} title="Home"
+                                              class="slds-m-left_small" name="home"></lightning-button>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" padding="around-small">
+                        <!--                        <div class="slds-align_absolute-center">-->
+                        <template if:true={extracting}>
+                            <div class="slds-m-top--x-small">
+                                <lightning-progress-bar value={progress}></lightning-progress-bar>
+                            </div>
+                        </template>
+                        <!--                        </div>-->
+                    </lightning-layout-item>
+                </lightning-layout>
+
+            </template>
+        </div>
+    </div>
+</template>
